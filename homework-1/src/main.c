@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Custom header(s)
-#include <secure_io.h>
-#include <vector.h>
+#include "secure_io.h"
+#include "vector.h"
 
 
 FILE* open_file()
@@ -50,10 +49,12 @@ to match the length of the longest column.
 */
 int main(int argc, char const *argv[])
 {
-    // Open the data file from STDIN and read in its contents
+    // Open the data file from STDIN
     FILE *fp = open_file();
+
+    // Read in its contents to the `table` array
     double *table;
-    table = (double*) malloc(sizeof(*table) * size);
+    table = (double*) malloc(sizeof(*table) * (2*2));
 
 
     fclose(fp);
