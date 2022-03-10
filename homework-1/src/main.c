@@ -25,9 +25,17 @@ FILE* open_file()
 }
 
 
-void read_file(FILE* fp)
+/*
+Reads a file that contains arbitrary many columns and arbitrary many elements
+in each of these columns. The delimiter between each columns can be also
+arbitrary except for numerals and the "-" minus sign. Depending on the case,
+the "." or the "," symbol is used as a decimal separator and will be detected
+automatically.
+
+*/
+void read_table(FILE *fp, double **table)
 {
-    
+
 }
 
 
@@ -42,8 +50,11 @@ to match the length of the longest column.
 */
 int main(int argc, char const *argv[])
 {
-    // Read the two files from STDIN
+    // Open the data file from STDIN and read in its contents
     FILE *fp = open_file();
+    double *table;
+    table = (double*) malloc(sizeof(*table) * size);
+
 
     fclose(fp);
     return 0;

@@ -3,12 +3,12 @@ SDIR        =   src
 ODIR        =   obj
 IDIR        =   include
 
-CC          =   clang -std=c17
+CC          =   gcc -std=c17
 OPTIMIZE    =   -O3 -Wall -Wextra -pedantic
 CFLAGS      =   $(OPTIMIZE) -I$(IDIR)
 LDFLAGS     =   -lm
 
-_DEPS       =   vector.h
+_DEPS       =   vector.h secure_io.h
 DEPS        =   $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ        =   main.o
