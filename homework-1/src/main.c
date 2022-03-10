@@ -6,6 +6,10 @@
 #include "vector.h"
 
 
+FILE* open_file();
+void read_table();
+
+
 FILE* open_file()
 {
     char *fname;
