@@ -13,86 +13,112 @@
 #include <ctype.h>
 
 
-// -- Reading a single line of string from STDIN or from a file
-char* _read_line(FILE* input)
+char* malloc_str(size_t size)
 {
-    // Start length is 16 characters
-    size_t size = 16;
     char* str = (char*) malloc(sizeof(*str) * size);
-    if(!str) { return str; }
-
-    int ch;
-    size_t len = 0;
-    while(EOF != (ch = fgetc(input)) && ch != '\n')
+    if(!str)
     {
-        str[len++] = ch;
-
-        // If maximum length is reached, expand `str` with 16 characters
-        if(len == size)
-        {
-            size += 16;
-            str = (char*) realloc(str, sizeof(*str) * size);
-            if(!str) { return str; }
-        }
+        fprintf(stderr, "Memory error! Cannot allocate memory for string!");
+        exit(EXIT_FAILURE);
     }
-    str[len++] = '\0';
 
     return str;
 }
 
 
-// Check consistency of 
-
-// Determining delimiter in a table file
-char* find_delimiter(FILE* fp)
+char* realloc_str(char* str, size_t size)
 {
-    // Read characters in file into a dynamic string
+    size = sizeof(str)/sizeof(str[0]) + size;
+    str = (char*) realloc(str, sizeof(*str) * size);
+    if(!str)
+    {
+        fprintf(stderr, "Memory error! Cannot allocate memory for string!");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+double* malloc_vec(size_t size)
+{
+    double* vec = (double*) malloc(sizeof(*vec) * size);
+    if(!vec)
+    {
+        fprintf(stderr, "Memory error! Cannot allocate memory for vector!");
+        exit(EXIT_FAILURE);
+    }
+
+    return vec;
+}
+
+
+double* realloc_vec(double* vec, size_t size)
+{
+    size = sizeof(vec)/sizeof(vec[0]) + size;
+    vec = (double*) realloc(vec, sizeof(*vec) * size);
+    if(!vec)
+    {
+        fprintf(stderr, "Memory error! Cannot allocate memory for vector!");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+char* secure_read_stdin(FILE* stdin)
+{
+    // Read characters to a dynamic string. Starting size is 16 characters.
     size_t size = 16;
-    char* str = (char*) malloc(sizeof(*str) * size);
-    if(!str) { return str; }
+    char* str = malloc_str(size);
 
     int ch;
     size_t len = 0;
-    // This while loop in this case reads the first line of the input file
-    
+    while(EOF != (ch = fgetc(stdin)) && ch != '\n')
+    {
+        str[len++] = ch;
 
-    // At this point the first line is read and written into the `str` variable
-    // 
+        // If maximum length is reached, expand `str` with 16 characters
+        if(len == size) { str = realloc_str(str, size); }
+    }
+    str[len++] = '\0';
 
     return str;
 }
 
 
 // -- Reading values from a table file to a 2D array --
-char* secure_table_str(FILE* fp, double** table)
+void secure_read_table(FILE* fp, double** table, char* delimiter)
 {
-    // Read characters in file into a dynamic string
+    // Read characters to a dynamic string. Starting size is 16 characters.
     size_t size = 16;
-    char* str = (char*) malloc(sizeof(*str) * size);
-    if(!str) { return str; }
+    char* str = malloc_str(size);
 
     int ch;
+    int line_num_read = 0;
     size_t len = 0;
+    size_t t_len = 0;
     while(EOF != (ch = fgetc(fp)))
     {
-        str[len++] = ch;
-
         // If maximum length is reached, expand `str` with 16 characters
-        if(len == size)
-        {
-            size += 16;
-            str = (char*) realloc(str, sizeof(*str) * size);
-            if(!str) { return str; }
-        }
+        if(len == size) { str = realloc_str(str, size); }
 
-        // If delimiter or end-of-line is reached, then convert the current
+        // If delimiter or EOL is reached, then convert the current
         // string into a double, empty the `str` variable and continue.
-        if(!isdigit(ch) && ch != '.')
+        if(ch == delimiter && ch == '\n')
         {
-            // Also if end-of-line is reached, increase the 
+            // Convert the `str` to double and write it to the table
+            *table[t_len++] = atof(str);
+            if(t_len == size) { *table = realloc_vec(*table, size); }
+
+            // Reset index and `str`
+            len = 0;
+            free(str);
+            char* str = malloc_str(size);
+
+            // Also if EOL is reached, increase the line counter
+            if(ch == '\n') { line_num_read++; }
+        }
+        else
+        {
+            str[len++] = ch;
         }
     }
-    str[len++] = '\0';
-
-    return str;
 }

@@ -57,8 +57,6 @@ int main(int argc, char const *argv[])
     FILE *fp = open_file();
 
     // Read in its contents to the `table` array
-    double *table;
-    table = (double*) malloc(sizeof(*table) * (2*2));
 
 
     fclose(fp);
