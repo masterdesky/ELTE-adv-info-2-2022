@@ -12,113 +12,115 @@
 #include <stddef.h>
 #include <ctype.h>
 
+#include "str.h"
+#include "vector.h"
 
-char* malloc_str(size_t size)
+
+char* secure_read_stdin()
 {
-    char* str = (char*) malloc(sizeof(*str) * size);
-    if(!str)
-    {
-        fprintf(stderr, "Memory error! Cannot allocate memory for string!");
-        exit(EXIT_FAILURE);
-    }
-
-    return str;
-}
-
-
-char* realloc_str(char* str, size_t size)
-{
-    size = sizeof(str)/sizeof(str[0]) + size;
-    str = (char*) realloc(str, sizeof(*str) * size);
-    if(!str)
-    {
-        fprintf(stderr, "Memory error! Cannot allocate memory for string!");
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-double* malloc_vec(size_t size)
-{
-    double* vec = (double*) malloc(sizeof(*vec) * size);
-    if(!vec)
-    {
-        fprintf(stderr, "Memory error! Cannot allocate memory for vector!");
-        exit(EXIT_FAILURE);
-    }
-
-    return vec;
-}
-
-
-double* realloc_vec(double* vec, size_t size)
-{
-    size = sizeof(vec)/sizeof(vec[0]) + size;
-    vec = (double*) realloc(vec, sizeof(*vec) * size);
-    if(!vec)
-    {
-        fprintf(stderr, "Memory error! Cannot allocate memory for vector!");
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-char* secure_read_stdin(FILE* stdin)
-{
-    // Read characters to a dynamic string. Starting size is 16 characters.
+    // Read characters to a dynamic string. Starting size is `size` characters.
+    String s;
     size_t size = 16;
-    char* str = malloc_str(size);
+    malloc_str(&s, size);
 
     int ch;
-    size_t len = 0;
     while(EOF != (ch = fgetc(stdin)) && ch != '\n')
     {
-        str[len++] = ch;
+        s.string[s.len++] = ch;
 
-        // If maximum length is reached, expand `str` with 16 characters
-        if(len == size) { str = realloc_str(str, size); }
+        // If maximum length is reached, expand `str` by `size` entries
+        if(s.len == s.size) { realloc_str(&s, size); }
     }
-    str[len++] = '\0';
+    s.string[s.len++] = '\0';
 
-    return str;
+    return s.string;
 }
 
 
 // -- Reading values from a table file to a 2D array --
-void secure_read_table(FILE* fp, double** table, char* delimiter)
+char get_delimiter()
 {
-    // Read characters to a dynamic string. Starting size is 16 characters.
-    size_t size = 16;
-    char* str = malloc_str(size);
-
-    int ch;
-    int line_num_read = 0;
-    size_t len = 0;
-    size_t t_len = 0;
-    while(EOF != (ch = fgetc(fp)))
+    // Ask for the delimiter. If nothing is given, ',' is assumed.
+    char delimiter;
+    while(1)
     {
-        // If maximum length is reached, expand `str` with 16 characters
-        if(len == size) { str = realloc_str(str, size); }
-
-        // If delimiter or EOL is reached, then convert the current
-        // string into a double, empty the `str` variable and continue.
-        if(ch == delimiter && ch == '\n')
+        fprintf(stdout, "Enter the delimiter of the file "
+                        "(first character matters only): ");
+        delimiter = secure_read_stdin()[0];
+        // Check whether chosen delimiter is correct
+        if((delimiter == '-') || isdigit(delimiter))
         {
-            // Convert the `str` to double and write it to the table
-            *table[t_len++] = atof(str);
-            if(t_len == size) { *table = realloc_vec(*table, size); }
-
-            // Reset index and `str`
-            len = 0;
-            free(str);
-            char* str = malloc_str(size);
-
-            // Also if EOL is reached, increase the line counter
-            if(ch == '\n') { line_num_read++; }
+            fprintf(stderr,
+                    "Delimiter can't be numeric or the character \"-\"!\n\n");
+            continue;
+        }
+        else if(delimiter == '\n')
+        {
+            fprintf(stdout, "Defalut delimiter chosen: -> , <-\n\n");
+            break;
         }
         else
         {
-            str[len++] = ch;
+            fprintf(stdout, "Custom delimiter chosen: -> %c <-\n\n", delimiter);
+            break;
         }
     }
+    return delimiter;
+}
+
+
+/*
+Reads a file that contains arbitrary many columns and arbitrary many elements
+in each of these columns. The delimiter between each columns can be also
+arbitrary except for numerals and the "-" minus sign. Depending on the case,
+the "." or the "," symbol is used as a decimal separator and will be detected
+automatically.
+
+*/
+void secure_read_table(FILE* fp, Vector *v)
+{
+    // Get the delimiter in the data file
+    char delimiter = get_delimiter();
+
+    // Read characters to a dynamic string. Starting size is `size` characters.
+    String s;
+    size_t size = 16;
+    malloc_str(&s, size);
+
+    char ch;                   // `ch` stores the current character read from input
+    char ch_prev = delimiter;  // `ch_prev` is used to detect missing values
+    while(EOF != (ch = fgetc(fp)))
+    {
+        // If delimiter or EOL is reached, then convert the current
+        // string into a double, empty the `str` variable and continue.
+        if(ch != delimiter && ch != '\n')
+        {
+            s.string[s.len++] = ch;
+            if(s.len == s.size) { realloc_str(&s, size); }
+        }
+        else
+        {
+            // If the previous non-digit character is the same as the current
+            // one, it means that there is a missing value between two delimiters
+            if(ch_prev == ch && !isdigit(ch)) { v->vector[v->len++] = 0.0;}
+            // Convert `str` from char* to double and write it to the table
+            else { v->vector[v->len++] = atof(s.string); }
+            // If maximum length is reached, expand `table` by `size` entries
+            if(v->len == v->size) { realloc_vec(v, size); }
+
+            fprintf(stdout, "%g\n", v->vector[v->len-1]);
+
+            // Reset index and the `str` variable
+            free_str(&s);
+            malloc_str(&s, size);
+
+            // If EOL is reached, increase the line counter
+            if(ch == '\n') { v->rows++; }
+        }
+        // `ch_prev` stores the previous character read from input
+        ch_prev = ch;
+    }
+
+    // Calculate the number of columns after finished reading the input
+    v->cols = v->len / v->rows;
 }

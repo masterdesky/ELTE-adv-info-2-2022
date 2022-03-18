@@ -8,7 +8,7 @@ OPTIMIZE    =   -O3 -Wall -Wextra -pedantic
 CFLAGS      =   $(OPTIMIZE) -I$(IDIR)
 LDFLAGS     =   -lm
 
-_DEPS       =   vector.h secure_io.h
+_DEPS       =   str.h vector.h secure_io.h
 DEPS        =   $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ        =   main.o

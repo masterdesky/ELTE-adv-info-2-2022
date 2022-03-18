@@ -3,18 +3,12 @@
 #include <string.h>
 
 #include "secure_io.h"
-#include "vector.h"
-
-
-FILE* open_file();
-void read_table();
-
 
 FILE* open_file()
 {
     char *fname;
-    fprintf(stdout, "\nEnter the file path: ");
-    fname = secure_stdin_str(stdin);
+    fprintf(stdout, "\nEnter absolute file path or relative to WD: ");
+    fname = secure_read_stdin();
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL)
@@ -25,20 +19,6 @@ FILE* open_file()
 
     free(fname);
     return fp;
-}
-
-
-/*
-Reads a file that contains arbitrary many columns and arbitrary many elements
-in each of these columns. The delimiter between each columns can be also
-arbitrary except for numerals and the "-" minus sign. Depending on the case,
-the "." or the "," symbol is used as a decimal separator and will be detected
-automatically.
-
-*/
-void read_table(FILE *fp, double **table)
-{
-
 }
 
 
@@ -57,8 +37,23 @@ int main(int argc, char const *argv[])
     FILE *fp = open_file();
 
     // Read in its contents to the `table` array
+    Vector v;
+    size_t size = 16;
+    malloc_vec(&v, size);
+    secure_read_table(fp, &v);
 
+    fprintf(stdout, "Rows: %zu, Cols: %zu", v.rows, v.cols);
+
+    for(size_t i = 0; i < v.rows; i++)
+    {
+        for(size_t j = 0; j < v.cols; j++)
+        {
+            fprintf(stdout, "%g ", v.vector[i*v.rows + j]);
+        }
+        fprintf(stdout, '\n');                
+    }
 
     fclose(fp);
+    free_vec(&v);
     return 0;
 }
