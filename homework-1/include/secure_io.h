@@ -1,7 +1,7 @@
 // --------------------------------------------------------------------------//
 //
 //    Securely reads in strings from STDIN or from a table file. Dynamically
-//    allocates memory for strings read in during the.
+//    allocates memory for strings during the reading.
 //
 // --------------------------------------------------------------------------//
 
@@ -12,15 +12,37 @@
 #include <stddef.h>
 #include <ctype.h>
 
-#include "str.h"
-#include "vector.h"
+
+// -- Prototype declarations --
+FILE* open_file();
+char* secure_read_stdin();
+char get_delimiter();
+void secure_read_table(FILE* fp, Matrix *m);
+
+
+FILE* open_file()
+{
+    char *fname;
+    fprintf(stdout, "\nEnter absolute file path or relative to WD: ");
+    fname = secure_read_stdin();
+
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL)
+    {
+       fprintf(stderr, "Error opening file \"%s\"!\n", fname);
+       exit(EXIT_FAILURE);
+    }
+
+    free(fname);
+    return fp;
+}
 
 
 char* secure_read_stdin()
 {
     // Read characters to a dynamic string. Starting size is `size` characters.
     String s;
-    size_t size = 16;
+    size_t size = 4;
     malloc_str(&s, size);
 
     int ch;
@@ -54,14 +76,15 @@ char get_delimiter()
                     "Delimiter can't be numeric or the character \"-\"!\n\n");
             continue;
         }
-        else if(delimiter == '\n')
+        else if((delimiter == '\0'))
         {
-            fprintf(stdout, "Defalut delimiter chosen: -> , <-\n\n");
+            delimiter = ',';
+            fprintf(stdout, "Defalut delimiter: -> , <-\n\n");
             break;
         }
         else
         {
-            fprintf(stdout, "Custom delimiter chosen: -> %c <-\n\n", delimiter);
+            fprintf(stdout, "Custom delimiter: -> %c <-\n\n", delimiter);
             break;
         }
     }
@@ -77,50 +100,62 @@ the "." or the "," symbol is used as a decimal separator and will be detected
 automatically.
 
 */
-void secure_read_table(FILE* fp, Vector *v)
+void secure_read_table(FILE* fp, Matrix *m)
 {
     // Get the delimiter in the data file
     char delimiter = get_delimiter();
 
     // Read characters to a dynamic string. Starting size is `size` characters.
     String s;
-    size_t size = 16;
+    size_t size = 4;
     malloc_str(&s, size);
 
     char ch;                   // `ch` stores the current character read from input
-    char ch_prev = delimiter;  // `ch_prev` is used to detect missing values
+    char ch_prev = delimiter;  // `ch_prev` is used to handle 
     while(EOF != (ch = fgetc(fp)))
     {
-        // If delimiter or EOL is reached, then convert the current
-        // string into a double, empty the `str` variable and continue.
-        if(ch != delimiter && ch != '\n')
+        // If delimiter or EOL is reached, then convert the current string into
+        // a double, empty the `str` variable and continue. Else continue
+        // gathering the characters to the `s.string` variable. 
+        if(ch == delimiter || ch == '\n')
         {
-            s.string[s.len++] = ch;
-            if(s.len == s.size) { realloc_str(&s, size); }
-        }
-        else
-        {
-            // If the previous non-digit character is the same as the current
-            // one, it means that there is a missing value between two delimiters
-            if(ch_prev == ch && !isdigit(ch)) { v->vector[v->len++] = 0.0;}
-            // Convert `str` from char* to double and write it to the table
-            else { v->vector[v->len++] = atof(s.string); }
-            // If maximum length is reached, expand `table` by `size` entries
-            if(v->len == v->size) { realloc_vec(v, size); }
-
-            fprintf(stdout, "%g\n", v->vector[v->len-1]);
+            // 1. case: Two delimiter is next to each other on the same line.
+            // In this case a value is missing from the dataset and set to 0.0
+            // by default.
+            if((ch_prev == delimiter) && (ch == delimiter))
+            {
+                m->matrix[m->len++] = 0.0;
+            }
+            // 2. case: Trailing delimiter at the end of the line is reached.
+            // In this case it gets simply ignored. (Just catching `else-if`.)
+            else if((ch_prev == delimiter) && (ch == '\n')) { }
+            // 3. case: Multiple EOL after each other is found.
+            // In this case they get simply ignored. (Just catching `else-if`.)
+            else if((ch_prev == '\n') && (ch == '\n')) { }
+            // 4. (default) case: Convert the current number from `char*` to
+            // `double` and write it to the table.
+            else {
+                m->matrix[m->len++] = atof(s.string);
+            }
 
             // Reset index and the `str` variable
             free_str(&s);
             malloc_str(&s, size);
-
-            // If EOL is reached, increase the line counter
-            if(ch == '\n') { v->rows++; }
+            
+            // If maximum length is reached, expand `table` by `size` entries
+            if(m->len == m->size) { realloc_mx(m, size); }
+            // If EOL with values on line is reached, increase the line counter
+            if((ch == '\n') && (ch_prev != '\n')) { m->rows++; }
+        }
+        else
+        {
+            s.string[s.len++] = ch;
+            if(s.len == s.size) { realloc_str(&s, size); }
         }
         // `ch_prev` stores the previous character read from input
         ch_prev = ch;
     }
 
     // Calculate the number of columns after finished reading the input
-    v->cols = v->len / v->rows;
+    m->cols = m->len / m->rows;
 }

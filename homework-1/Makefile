@@ -8,7 +8,7 @@ OPTIMIZE    =   -O3 -Wall -Wextra -pedantic
 CFLAGS      =   $(OPTIMIZE) -I$(IDIR)
 LDFLAGS     =   -lm
 
-_DEPS       =   str.h vector.h secure_io.h
+_DEPS       =   str.h matrix.h secure_io.h
 DEPS        =   $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ        =   main.o
@@ -17,7 +17,7 @@ OBJ         =   $(patsubst %,$(ODIR)/%,$(_OBJ))
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-$(BDIR)/vector: $(OBJ)
+$(BDIR)/matrix: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 .PHONY: clean

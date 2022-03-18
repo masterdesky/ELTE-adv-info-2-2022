@@ -1,24 +1,64 @@
 #include <stdio.h>
+
 #include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
+#include <string.h>  // For `memset()`
 
+#include "str.h"
+#include "matrix.h"
 #include "secure_io.h"
+#include "operations.h"
 
-FILE* open_file()
+
+void print_info(Matrix *m)
 {
-    char *fname;
-    fprintf(stdout, "\nEnter absolute file path or relative to WD: ");
-    fname = secure_read_stdin();
+    fprintf(stderr, "--   TABLE INFO   --\n"
+                    "--------------------\n");
+    fprintf(stderr, "Rows: %zu, Cols: %zu\n\n", m->rows, m->cols);
 
-    FILE *fp = fopen(fname, "r");
-    if (fp == NULL)
+    fprintf(stderr, "-- TABLE CONTENTS --\n"
+                    "--------------------\n");
+    for(size_t i = 0; i < m->rows; i++)
     {
-       fprintf(stderr, "Error opening file \"%s\"!\n", fname);
-       exit(EXIT_FAILURE);
+        for(size_t j = 0; j < m->cols; j++)
+        {
+            fprintf(stderr, "%g\t", m->matrix[i*m->cols + j]);
+        }
+        fprintf(stderr, "\n");
     }
+}
 
-    free(fname);
-    return fp;
+
+void evaluate_operations(Matrix *m)
+{
+    // Do operations
+    double sum_t = sum_total(m);
+    double *sum_r; sum_r = sum_rows(m);
+    double *sum_c; sum_c = sum_cols(m);
+
+    fprintf(stdout, "\n\nSum of vals:\n"
+                    "----------------\n");
+    fprintf(stdout, "SUM = [ %g ]", sum_t);
+
+
+    fprintf(stdout, "\n\nSum of cols:\n"
+                    "----------------\n");
+    fprintf(stdout, "SUM = [ ");
+    for(size_t i = 0; i < m->cols; i++)
+    {
+        fprintf(stdout, "%g ", sum_c[i]);
+    }
+    fprintf(stdout, "]");
+
+
+    fprintf(stdout, "\n\nSum of rows:\n"
+                    "----------------\n");
+    fprintf(stdout, "SUM = [ ");
+    for(size_t i = 0; i < m->rows; i++)
+    {
+        fprintf(stdout, "%g ", sum_r[i]);
+    }
+    fprintf(stdout, "]");
 }
 
 
@@ -37,23 +77,16 @@ int main(int argc, char const *argv[])
     FILE *fp = open_file();
 
     // Read in its contents to the `table` array
-    Vector v;
+    Matrix m;
     size_t size = 16;
-    malloc_vec(&v, size);
-    secure_read_table(fp, &v);
+    malloc_mx(&m, size);
+    secure_read_table(fp, &m);
+    print_info(&m);
 
-    fprintf(stdout, "Rows: %zu, Cols: %zu", v.rows, v.cols);
-
-    for(size_t i = 0; i < v.rows; i++)
-    {
-        for(size_t j = 0; j < v.cols; j++)
-        {
-            fprintf(stdout, "%g ", v.vector[i*v.rows + j]);
-        }
-        fprintf(stdout, '\n');                
-    }
+    // Evaluate some operations between the elements of the matrix
+    evaluate_operations(&m);
 
     fclose(fp);
-    free_vec(&v);
+    free_mx(&m);
     return 0;
 }
