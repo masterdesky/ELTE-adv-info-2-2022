@@ -134,7 +134,8 @@ void secure_read_table(FILE* fp, Matrix *m)
             else if((ch_prev == '\n') && (ch == '\n')) { }
             // 4. (default) case: Convert the current number from `char*` to
             // `double` and write it to the table.
-            else {
+            else
+            {
                 m->matrix[m->len++] = atof(s.string);
             }
 
