@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>  // For `memset()`
@@ -63,8 +62,9 @@ void evaluate_operations(Matrix *m)
 
 
 /*
-The program will read in a file after asking for a file name. The file should
-be a TSV or CSV file with arbitrary number of column.
+The program will read in a file after asking for a file name. The file could
+contain a table with a consistent delimiter and arbitrary number of columns and
+rows.
 
 The program will read these columns into an array and then sum all of them
 by components. The shorter columns will be padded with zeros during summation
