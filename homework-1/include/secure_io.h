@@ -23,7 +23,7 @@ void secure_read_table(FILE* fp, Matrix *m);
 FILE* open_file()
 {
     char *fname;
-    fprintf(stdout, "\nEnter absolute file path or relative to WD: ");
+    fprintf(stdout, "\nEnter path to file: ");
     fname = secure_read_stdin();
 
     FILE *fp = fopen(fname, "r");
