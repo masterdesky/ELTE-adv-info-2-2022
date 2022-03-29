@@ -8,13 +8,10 @@ OPTIMIZE    =   -O3 -Wall -Wextra -pedantic
 CFLAGS      =   $(OPTIMIZE) -I$(IDIR)
 LDFLAGS     =   -lm
 
-_DEPS       =   func.h
-DEPS        =   $(patsubst %,$(IDIR)/%,$(_DEPS))
-
 _OBJ        =   main.o
 OBJ         =   $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BDIR)/diff: $(OBJ)

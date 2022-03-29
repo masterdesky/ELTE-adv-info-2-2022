@@ -2,10 +2,33 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "func.h"
-
-
 #define PI 3.14159265358979323
+
+
+double f(double x0)
+{
+    double y0 = sin(x0);
+
+    return y0;
+}
+
+
+// Inputs are `x_{i}` and `x_{i+1}`
+double f_FW(double x0, double x1)
+{
+    double y0 = (f(x1) - f(x0)) / (x1 - x0);
+
+    return y0;
+}
+
+
+// Inputs are `x_{i-1}` and `x_{i}`
+double f_BW(double x_1, double x0)
+{
+    double y0 = (f(x0) - f(x_1)) / (x0 - x_1);
+
+    return y0;
+}
 
 
 int main(int argc, char const *argv[])
@@ -50,7 +73,7 @@ int main(int argc, char const *argv[])
     
 
     // Print the results to a file
-    FILE *fp = fopen("analysis/data/diff.dat", "w+");
+    FILE *fp = fopen("diff.dat", "w+");
     for(size_t i = 0; i < N; i++)
     {
         fprintf(fp, "%g,%g,%g\n", x[i], y[i], y_FW[i]);
