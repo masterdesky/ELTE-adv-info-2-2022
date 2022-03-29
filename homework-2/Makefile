@@ -8,7 +8,7 @@ OPTIMIZE    =   -O3 -Wall -Wextra -pedantic
 CFLAGS      =   $(OPTIMIZE) -I$(IDIR)
 LDFLAGS     =   -lm
 
-_DEPS       =   func.h
+_DEPS       =   str.h func.h secure_io.h
 DEPS        =   $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ        =   main.o
