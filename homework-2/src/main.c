@@ -12,7 +12,7 @@
 
 int main(int argc, char const *argv[])
 {
-    size_t N = 64;
+    size_t N = 1000;
     double dx = 4 * PI / (N-1);
 
     // Define `x`
@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     {
         y_FW[i] = f_FW(x[i], x[i+1]);
     }
-    y_FW[N] = f_BW(x[N-2], x[N-1]);
+    y_FW[N-1] = f_BW(x[N-2], x[N-1]);
     fprintf(stdout, "y after FW:\n"); print(y, N);
 
 
@@ -63,7 +63,7 @@ int main(int argc, char const *argv[])
     {
         y_CE[i] = f_CE(x[i-1], x[i+1]);
     }
-    y_CE[N] = f_BW(x[N-2], x[N-1]);
+    y_CE[N-1] = f_BW(x[N-2], x[N-1]);
 
 
     // Calculate the `y_AN` derivative using the analytic formula

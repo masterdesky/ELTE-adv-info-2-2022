@@ -1,6 +1,7 @@
 ## Custom gitignore
 bin/
 obj/
+.idea/
 .vscode/
 
 ## C
