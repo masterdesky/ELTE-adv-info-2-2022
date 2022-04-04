@@ -12,7 +12,12 @@
 
 int main(int argc, char const *argv[])
 {
-    size_t N = 1000;
+    if(argc != 2)
+    {
+        fprintf(stdout, "Usage: ./diff <N>\n");
+        exit(EXIT_FAILURE);
+    }
+    size_t N = (size_t) strtoul(argv[1], NULL, 10);
     double dx = 4 * PI / (N-1);
 
     // Define `x`
@@ -22,7 +27,7 @@ int main(int argc, char const *argv[])
         x[i] = i*dx;
     }
     fprintf(stdout, "x:\n"); print(x, N);
-    
+
 
     // Calculate the `y` values
     double y[N];
@@ -42,7 +47,7 @@ int main(int argc, char const *argv[])
         y_FW[i] = f_FW(x[i], x[i+1]);
     }
     y_FW[N-1] = f_BW(x[N-2], x[N-1]);
-    fprintf(stdout, "y after FW:\n"); print(y, N);
+    fprintf(stdout, "y_FW :\n"); print(y, N);
 
 
     // Calculate the `y_BW` derivative using backward differentiation
@@ -76,7 +81,8 @@ int main(int argc, char const *argv[])
     
 
     // Print the results to a file
-    FILE *fp = open_file();
+    //FILE *fp = open_file();
+    FILE *fp = fopen("./data/diff.dat", "w+");
     for(size_t i = 0; i < N; i++)
     {
         fprintf(fp, "%g\t%g\t%g\t%g\t%g\t%g\n",

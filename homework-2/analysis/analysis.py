@@ -1,3 +1,4 @@
+#!/bin/env/python
 import os
 
 import numpy as np
@@ -35,7 +36,7 @@ def plot_data(data):
 
 
 def main():
-    data = np.genfromtxt("analysis/data/diff.dat", delimiter='\t')
+    data = np.genfromtxt("data/diff.dat", delimiter='\t')
     plot_data(data)
 
 
