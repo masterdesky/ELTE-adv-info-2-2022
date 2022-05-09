@@ -12,6 +12,8 @@ vector3d::vector3d(vector3d const &v)
 {
     x = v.x; y = v.y; z = v.z;
 }
+// Destructor
+vector3d::~vector3d() {}
 
 /////////////////////////////
 //
