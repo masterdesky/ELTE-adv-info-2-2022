@@ -4,6 +4,10 @@ obj/
 .idea/
 .vscode/
 build/
+data/
+
+## Jupter checkpoint
+.ipynb_checkpoint/
 
 ## C
 # Prerequisites

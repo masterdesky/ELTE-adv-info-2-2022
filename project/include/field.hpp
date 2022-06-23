@@ -43,7 +43,7 @@ Field::Field(const int n, const double x0, const double x1)
     // h = (b - a) / (# of gridpoints - 1)
     h = (x1 - x0) / (N - 1);
 
-    for(int i=0; i < N; i++) { v.push_back(i*h); }
+    for(int i=0; i < N; i++) { v.push_back(x0 + i*h); }
 }
 
 Field::~Field()
